@@ -12,553 +12,149 @@
 <title>Shadow Layer</title>
 <script>
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js');
-    });
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
   }
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #050a12;
-  --surface: #0a1220;
-  --surface2: #0f1a2e;
-  --border: rgba(80,160,255,0.15);
-  --accent: #3a8fff;
-  --accent2: #00e5a0;
-  --accent3: #ff5c8a;
-  --text1: #e0eeff;
-  --text2: #7090b0;
-  --text3: #3a5070;
-  --mono: 'Space Mono', monospace;
-  --sans: 'Noto Sans JP', sans-serif;
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html { height: 100%; }
-body {
-  background: var(--bg);
-  color: var(--text1);
-  font-family: var(--sans);
-  font-weight: 300;
-  height: 100%;
-  min-height: 100dvh;
-  overflow-x: hidden;
-}
-
-/* BG grid */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(58,143,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(58,143,255,0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.app {
-  position: relative;
-  z-index: 1;
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 0 16px 120px;
-}
-
-/* HEADER */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24px 0 20px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 20px;
-}
-.logo-block {}
-.logo {
-  font-family: var(--mono);
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: 2px;
-}
-.logo-sub {
-  font-size: 10px;
-  color: var(--text3);
-  letter-spacing: 3px;
-  margin-top: 2px;
-  text-transform: uppercase;
-}
-.header-badge {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--accent2);
-  border: 1px solid var(--accent2);
-  border-radius: 4px;
-  padding: 3px 8px;
-  opacity: 0.7;
-}
-
-/* SECTION LABEL */
-.section-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--text3);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-/* CARD */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 14px;
-}
-
-/* INPUT ROW */
-.url-row {
-  display: flex;
-  gap: 8px;
-  align-items: stretch;
-}
-.url-input {
-  flex: 1;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  color: var(--text1);
-  font-family: var(--mono);
-  font-size: 12px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.url-input:focus { border-color: var(--accent); }
-.url-input::placeholder { color: var(--text3); }
-
-.btn {
-  background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 18px;
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
-  white-space: nowrap;
-}
-.btn:active { transform: scale(0.97); opacity: 0.85; }
-.btn.secondary {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text2);
-}
-.btn.green { background: var(--accent2); color: #05120a; }
-.btn.red { background: var(--accent3); }
-.btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
-/* VIDEO PLAYER */
-#playerWrap {
-  position: relative;
-  width: 100%;
-  padding-top: 56.25%;
-  background: #000;
-  border-radius: 10px;
-  overflow: hidden;
-  display: none;
-  margin-bottom: 14px;
-}
-#playerWrap iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
-/* PLAYBACK CONTROLS */
-.controls-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.speed-btns {
-  display: flex;
-  gap: 4px;
-}
-.speed-btn {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text2);
-  font-family: var(--mono);
-  font-size: 11px;
-  padding: 5px 10px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.speed-btn.active {
-  background: rgba(58,143,255,0.15);
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-/* TABS */
-.tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0;
-}
-.tab {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text3);
-  padding: 8px 14px;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: all 0.15s;
-  letter-spacing: 1px;
-}
-.tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
-.tab-pane { display: none; }
-.tab-pane.active { display: block; }
-
-/* SCRIPT AREA */
-.script-textarea {
-  width: 100%;
-  min-height: 140px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
-  color: var(--text1);
-  font-family: var(--sans);
-  font-size: 14px;
-  line-height: 1.8;
-  outline: none;
-  resize: vertical;
-  transition: border-color 0.2s;
-}
-.script-textarea:focus { border-color: var(--accent); }
-.script-textarea::placeholder { color: var(--text3); }
-
-/* SCRIPT DISPLAY */
-#scriptDisplay {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px;
-  font-size: 15px;
-  line-height: 2;
-  min-height: 80px;
-  color: var(--text1);
-  white-space: pre-wrap;
-  display: none;
-}
-#scriptDisplay.visible { display: block; }
-.script-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-/* RECORDING */
-.rec-status {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 0;
-}
-.rec-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--text3);
-  transition: background 0.3s;
-}
-.rec-dot.recording {
-  background: var(--accent3);
-  animation: recPulse 0.8s ease-in-out infinite;
-}
-@keyframes recPulse {
-  0%,100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
-}
-.rec-label {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text2);
-}
-.rec-timer {
-  font-family: var(--mono);
-  font-size: 16px;
-  color: var(--accent3);
-  min-width: 50px;
-}
-
-.recording-item {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.recording-item audio {
-  flex: 1;
-  height: 30px;
-}
-.recording-name {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--text3);
-  min-width: 72px;
-}
-.del-btn {
-  background: none;
-  border: none;
-  color: var(--text3);
-  cursor: pointer;
-  font-size: 16px;
-  padding: 2px 6px;
-  transition: color 0.15s;
-}
-.del-btn:hover { color: var(--accent3); }
-
-.empty-state {
-  text-align: center;
-  color: var(--text3);
-  font-size: 13px;
-  padding: 32px;
-  font-family: var(--mono);
-}
-
-/* AI section */
-.ai-row {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-.ai-input {
-  flex: 1;
-  min-width: 180px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  color: var(--text1);
-  font-family: var(--mono);
-  font-size: 11px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.ai-input:focus { border-color: var(--accent); }
-.ai-input::placeholder { color: var(--text3); }
-
-/* API KEY */
-.key-row {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 8px;
-}
-.key-input {
-  flex: 1;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 10px;
-  color: var(--text2);
-  font-family: var(--mono);
-  font-size: 11px;
-  outline: none;
-}
-.key-input:focus { border-color: var(--accent); }
-.toggle-btn {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text2);
-  font-size: 14px;
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-/* BOTTOM BAR */
-.bottom-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(5,10,18,0.95);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border);
-  padding: 12px 16px 20px;
-  z-index: 50;
-}
-.bottom-inner {
-  max-width: 680px;
-  margin: 0 auto;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-#recBtn {
-  flex: 1;
-  padding: 14px;
-  font-size: 14px;
-  border-radius: 10px;
-}
-#playbackBtn {
-  padding: 14px 20px;
-  border-radius: 10px;
-  font-size: 13px;
-}
-
-/* NOTICE */
-.notice {
-  background: rgba(58,143,255,0.07);
-  border: 1px solid rgba(58,143,255,0.2);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 12px;
-  color: var(--text2);
-  margin-bottom: 12px;
-  line-height: 1.6;
-}
-
-/* SPINNER */
-.spinner {
-  display: inline-block;
-  width: 13px; height: 13px;
-  border: 2px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  vertical-align: middle;
-  margin-right: 5px;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* SETTINGS drawer */
-#settingsPanel {
-  display: none;
-  margin-bottom: 14px;
-}
-#settingsPanel.open { display: block; }
-
-.settings-toggle {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text3);
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 2px;
-  padding: 6px 12px;
-  cursor: pointer;
-  margin-bottom: 12px;
-  transition: all 0.15s;
-}
-.settings-toggle:hover { color: var(--text2); border-color: var(--text3); }
-
-/* AB repeat indicator */
-.ab-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-.ab-badge {
-  font-family: var(--mono);
-  font-size: 10px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  background: rgba(0,229,160,0.1);
-  border: 1px solid rgba(0,229,160,0.3);
-  color: var(--accent2);
-}
-
-@media (max-width: 480px) {
-  .controls-row { gap: 6px; }
-  .btn { padding: 9px 14px; font-size: 11px; }
-}
+:root{--bg:#050a12;--surface:#0a1220;--surface2:#0f1a2e;--border:rgba(80,160,255,0.15);--accent:#3a8fff;--accent2:#00e5a0;--accent3:#ff5c8a;--text1:#e0eeff;--text2:#7090b0;--text3:#3a5070;--mono:'Space Mono',monospace;--sans:'Noto Sans JP',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%}
+body{background:var(--bg);color:var(--text1);font-family:var(--sans);font-weight:300;min-height:100dvh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(58,143,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(58,143,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:0 16px 130px}
+.header{display:flex;align-items:center;justify-content:space-between;padding:24px 0 20px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.logo{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent);letter-spacing:2px}
+.logo-sub{font-size:10px;color:var(--text3);letter-spacing:3px;margin-top:2px;text-transform:uppercase}
+.header-badge{font-family:var(--mono);font-size:10px;color:var(--accent2);border:1px solid var(--accent2);border-radius:4px;padding:3px 8px;opacity:0.7}
+.section-label{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+.input-row{display:flex;gap:8px;align-items:stretch}
+input[type=text],input[type=url],input[type=search],input[type=password]{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text1);font-family:var(--mono);font-size:12px;outline:none;transition:border-color 0.2s;width:100%}
+input:focus{border-color:var(--accent)}
+input::placeholder{color:var(--text3)}
+.input-row input{flex:1;width:auto}
+.btn{background:var(--accent);color:white;border:none;border-radius:8px;padding:10px 18px;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;transition:opacity 0.2s,transform 0.1s;white-space:nowrap}
+.btn:active{transform:scale(0.97);opacity:0.85}
+.btn.secondary{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn.green{background:var(--accent2);color:#05120a}
+.btn.red{background:var(--accent3)}
+.btn:disabled{opacity:0.35;cursor:not-allowed}
+.url-display{display:none;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-top:10px;align-items:center;gap:8px}
+.url-display.visible{display:flex}
+.url-display-text{flex:1;font-family:var(--mono);font-size:10px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.copy-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:var(--mono);font-size:10px;padding:4px 10px;cursor:pointer;white-space:nowrap;transition:all 0.15s}
+.copy-btn.copied{color:var(--accent2);border-color:var(--accent2)}
+#playerWrap{position:relative;width:100%;padding-top:56.25%;background:#000;border-radius:10px;overflow:hidden;display:none;margin-bottom:14px}
+#playerWrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
+.speed-btns{display:flex;gap:4px;flex-wrap:wrap}
+.speed-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:var(--mono);font-size:11px;padding:6px 12px;cursor:pointer;transition:all 0.15s}
+.speed-btn.active{background:rgba(58,143,255,0.15);border-color:var(--accent);color:var(--accent)}
+.search-results{margin-top:12px}
+.search-result-item{display:flex;gap:10px;align-items:flex-start;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;cursor:pointer;transition:border-color 0.15s}
+.search-result-item:active{border-color:var(--accent)}
+.search-thumb{width:80px;min-width:80px;height:45px;border-radius:4px;object-fit:cover;background:var(--surface2)}
+.search-info{flex:1;overflow:hidden}
+.search-title{font-size:12px;color:var(--text1);line-height:1.4;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.search-channel{font-family:var(--mono);font-size:10px;color:var(--text3)}
+.search-play-icon{color:var(--accent);font-size:18px;align-self:center;min-width:20px}
+.tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid var(--border)}
+.tab{font-family:var(--mono);font-size:11px;color:var(--text3);padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;letter-spacing:1px}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+.script-textarea{width:100%;min-height:140px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text1);font-family:var(--sans);font-size:14px;line-height:1.8;outline:none;resize:vertical;transition:border-color 0.2s}
+.script-textarea:focus{border-color:var(--accent)}
+.script-textarea::placeholder{color:var(--text3)}
+#scriptDisplay{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:15px;line-height:2;min-height:80px;color:var(--text1);white-space:pre-wrap;display:none}
+#scriptDisplay.visible{display:block}
+.rec-status{display:flex;align-items:center;gap:10px;padding:10px 0}
+.rec-dot{width:10px;height:10px;border-radius:50%;background:var(--text3);transition:background 0.3s}
+.rec-dot.recording{background:var(--accent3);animation:recPulse 0.8s ease-in-out infinite}
+@keyframes recPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+.rec-label{font-family:var(--mono);font-size:11px;color:var(--text2)}
+.rec-timer{font-family:var(--mono);font-size:16px;color:var(--accent3);min-width:50px}
+.recording-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.recording-item audio{flex:1;height:30px}
+.recording-name{font-family:var(--mono);font-size:10px;color:var(--text3);min-width:72px}
+.del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 6px}
+.empty-state{text-align:center;color:var(--text3);font-size:13px;padding:32px;font-family:var(--mono)}
+.ai-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.ai-row input{flex:1;min-width:180px}
+.key-row{display:flex;gap:6px;margin-bottom:8px}
+.key-row input{flex:1;width:auto}
+.toggle-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:14px;padding:6px 10px;cursor:pointer}
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(5,10,18,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:12px 16px 20px;z-index:50}
+.bottom-inner{max-width:680px;margin:0 auto;display:flex;gap:10px;align-items:center}
+#recBtn{flex:1;padding:14px;font-size:14px;border-radius:10px}
+#playbackBtn{padding:14px 20px;border-radius:10px;font-size:13px}
+.notice{background:rgba(58,143,255,0.07);border:1px solid rgba(58,143,255,0.2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.6}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+select{background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text2);padding:7px 10px;font-family:var(--mono);font-size:11px;outline:none}
+@media(max-width:480px){.btn{padding:9px 14px;font-size:11px}.tab{padding:8px 8px;font-size:10px}}
 </style>
 </head>
 <body>
-
 <div class="app">
 
-  <!-- HEADER -->
   <div class="header">
-    <div class="logo-block">
+    <div>
       <div class="logo">SHADOW LAYER</div>
       <div class="logo-sub">Shadowing &amp; Listening Trainer</div>
     </div>
     <div class="header-badge">PWA</div>
   </div>
 
-  <!-- YOUTUBE SECTION -->
-  <div class="section-label">▸ YouTube</div>
+  <!-- SEARCH -->
+  <div class="section-label">▸ YouTube 検索</div>
   <div class="card">
-    <div class="url-row">
-      <input class="url-input" id="urlInput" type="url"
-        placeholder="https://www.youtube.com/watch?v=..." />
-      <button class="btn" onclick="loadVideo()">Load</button>
+    <div class="input-row">
+      <input type="search" id="searchInput" placeholder="キーワードで検索... (例: TED-Ed English, BBC Learning)" onkeydown="if(event.key==='Enter')searchYouTube()">
+      <button class="btn" onclick="searchYouTube()" id="searchBtn">検索</button>
     </div>
-    <div class="notice" style="margin-top:10px;margin-bottom:0;font-size:11px;">
-      💡 YouTubeに字幕がある動画を推奨。ゆっくり話す教材（TED-Ed, BBC Learning, VOA）が最適。
+    <div class="search-results" id="searchResults"></div>
+  </div>
+
+  <!-- URL INPUT -->
+  <div class="section-label">▸ URL 直接入力</div>
+  <div class="card">
+    <div class="input-row">
+      <input type="url" id="urlInput" placeholder="https://www.youtube.com/watch?v=...">
+      <button class="btn" onclick="loadVideoFromInput()">Load</button>
+    </div>
+    <div class="url-display" id="urlDisplay">
+      <span class="url-display-text" id="urlDisplayText">—</span>
+      <button class="copy-btn" id="copyBtn" onclick="copyUrl()">コピー</button>
+      <a id="urlOpenBtn" href="#" target="_blank" style="color:var(--accent);font-family:var(--mono);font-size:10px;white-space:nowrap;">開く↗</a>
+    </div>
+    <div class="notice" style="margin-top:10px;">
+      💡 字幕付き動画を推奨。TED-Ed / BBC Learning / VOA がシャドーイングに最適。
     </div>
   </div>
 
-  <!-- VIDEO PLAYER -->
+  <!-- PLAYER -->
   <div id="playerWrap">
     <iframe id="ytPlayer" allowfullscreen allow="autoplay"></iframe>
   </div>
 
-  <!-- PLAYBACK CONTROLS -->
+  <!-- SPEED -->
   <div class="card" id="controlsCard" style="display:none;">
     <div class="section-label" style="margin-bottom:10px;">▸ 再生速度</div>
-    <div class="controls-row">
-      <div class="speed-btns">
-        <button class="speed-btn" onclick="setSpeed(0.5)">×0.5</button>
-        <button class="speed-btn" onclick="setSpeed(0.75)">×0.75</button>
-        <button class="speed-btn active" onclick="setSpeed(1.0)">×1.0</button>
-        <button class="speed-btn" onclick="setSpeed(1.25)">×1.25</button>
-      </div>
+    <div class="speed-btns">
+      <button class="speed-btn" onclick="setSpeed(0.25)">×0.25</button>
+      <button class="speed-btn" onclick="setSpeed(0.5)">×0.5</button>
+      <button class="speed-btn" onclick="setSpeed(0.75)">×0.75</button>
+      <button class="speed-btn active" onclick="setSpeed(1.0)">×1.0</button>
+      <button class="speed-btn" onclick="setSpeed(1.25)">×1.25</button>
+      <button class="speed-btn" onclick="setSpeed(1.5)">×1.5</button>
     </div>
-    <div class="ab-row">
-      <button class="btn secondary" style="font-size:11px;padding:6px 12px;" onclick="setAB('a')">
-        [A] セット
-      </button>
-      <button class="btn secondary" style="font-size:11px;padding:6px 12px;" onclick="setAB('b')">
-        [B] セット
-      </button>
-      <button class="btn secondary" style="font-size:11px;padding:6px 12px;" onclick="clearAB()">
-        AB クリア
-      </button>
-      <span class="ab-badge" id="abBadge" style="display:none;"></span>
+    <div style="margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--text3);">
+      ※ YouTube側の速度設定も合わせて変更してください
     </div>
   </div>
 
-  <!-- SCRIPT + RECORDING TABS -->
+  <!-- TABS -->
   <div class="tabs">
     <div class="tab active" onclick="switchTab('script',this)">スクリプト</div>
     <div class="tab" onclick="switchTab('rec',this)">録音</div>
@@ -569,40 +165,32 @@ body::before {
   <div class="tab-pane active" id="tab-script">
     <div class="card">
       <div class="section-label" style="margin-bottom:8px;">▸ スクリプト入力</div>
-      <textarea class="script-textarea" id="scriptInput"
-        placeholder="シャドーイングするスクリプトをここに入力してください。&#10;&#10;例: Hello everyone, welcome to today's lesson. Today we're going to talk about..."></textarea>
+      <textarea class="script-textarea" id="scriptInput" placeholder="シャドーイングするスクリプトをここに入力してください。&#10;&#10;例: Hello everyone, welcome to today's lesson..."></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-        <button class="btn" onclick="showScript()">スクリプト表示</button>
+        <button class="btn" onclick="showScript()">表示</button>
         <button class="btn secondary" onclick="clearScript()">クリア</button>
       </div>
     </div>
-
-    <!-- AI Script Generator -->
     <div class="card">
       <div class="section-label" style="margin-bottom:8px;">▸ AIスクリプト生成</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6;">
-        トピックを入力するとAIが英語スクリプトを生成します
-      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6;">トピックを入力するとAIが英語スクリプトを生成します</div>
       <div class="ai-row">
-        <input class="ai-input" id="topicInput"
-          placeholder="例: daily routine, climate change, Japanese culture..." />
+        <input type="text" id="topicInput" placeholder="例: daily routine, climate change...">
         <button class="btn green" onclick="generateScript()" id="genBtn">生成</button>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-        <select id="levelSelect" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text2);padding:7px 10px;font-family:var(--mono);font-size:11px;outline:none;">
+        <select id="levelSelect">
           <option value="beginner">初級 (A1-A2)</option>
           <option value="intermediate" selected>中級 (B1-B2)</option>
           <option value="advanced">上級 (C1-C2)</option>
         </select>
-        <select id="lengthSelect" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text2);padding:7px 10px;font-family:var(--mono);font-size:11px;outline:none;">
+        <select id="lengthSelect">
           <option value="short">短め (50語)</option>
           <option value="medium" selected>中 (100語)</option>
           <option value="long">長め (150語)</option>
         </select>
       </div>
     </div>
-
-    <!-- Script Display -->
     <div id="scriptDisplay"></div>
   </div>
 
@@ -615,42 +203,43 @@ body::before {
         <div class="rec-label" id="recLabel">待機中</div>
         <div class="rec-timer" id="recTimer" style="display:none;">0:00</div>
       </div>
-      <div style="font-size:12px;color:var(--text2);line-height:1.6;">
-        YouTubeを再生しながら録音ボタンを押してシャドーイングしてください。<br>
-        録音後に自分の声と比較できます。
-      </div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;">YouTubeを再生しながら録音ボタンを押してシャドーイングしてください。<br>録音後に自分の声と比較できます。</div>
     </div>
-
     <div class="section-label">▸ 録音一覧</div>
-    <div id="recordingsList">
-      <div class="empty-state">録音がありません<br>下のボタンで録音を開始</div>
-    </div>
+    <div id="recordingsList"><div class="empty-state">録音がありません<br>下のボタンで録音を開始</div></div>
   </div>
 
   <!-- SETTINGS TAB -->
   <div class="tab-pane" id="tab-settings">
     <div class="card">
-      <div class="section-label" style="margin-bottom:10px;">▸ Groq API キー</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">
-        AIスクリプト生成に使用。<a href="https://console.groq.com" target="_blank"
-          style="color:var(--accent);">console.groq.com</a> で取得（無料）
+      <div class="section-label" style="margin-bottom:10px;">▸ YouTube Data API キー</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6;">
+        YouTube検索に使用。<a href="https://console.cloud.google.com" target="_blank" style="color:var(--accent);">Google Cloud Console</a> で取得（無料・1日100回検索）
       </div>
       <div class="key-row">
-        <input class="key-input" id="groqKey" type="password"
-          placeholder="gsk_..." />
-        <button class="toggle-btn" onclick="toggleKey('groqKey',this)">👁</button>
-        <button class="btn" style="font-size:11px;padding:8px 12px;" onclick="saveKey()">保存</button>
+        <input type="password" id="ytKey" placeholder="AIza...">
+        <button class="toggle-btn" onclick="toggleKey('ytKey',this)">👁</button>
+        <button class="btn" style="font-size:11px;padding:8px 12px;" onclick="saveYtKey()">保存</button>
       </div>
-      <div id="keyStatus" style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:6px;"></div>
+      <div id="ytKeyStatus" style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:4px;"></div>
     </div>
-
+    <div class="card">
+      <div class="section-label" style="margin-bottom:10px;">▸ Groq API キー</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">AIスクリプト生成に使用。<a href="https://console.groq.com" target="_blank" style="color:var(--accent);">console.groq.com</a> で取得（無料）</div>
+      <div class="key-row">
+        <input type="password" id="groqKey" placeholder="gsk_...">
+        <button class="toggle-btn" onclick="toggleKey('groqKey',this)">👁</button>
+        <button class="btn" style="font-size:11px;padding:8px 12px;" onclick="saveGroqKey()">保存</button>
+      </div>
+      <div id="groqKeyStatus" style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:4px;"></div>
+    </div>
     <div class="card">
       <div class="section-label" style="margin-bottom:10px;">▸ シャドーイングについて</div>
       <div style="font-size:13px;color:var(--text2);line-height:1.9;">
         <b style="color:var(--text1);">シャドーイングとは</b><br>
         音声を聞きながら、0.5〜1秒遅れで声に出して追いかける練習法。<br><br>
         <b style="color:var(--text1);">手順</b><br>
-        1. 動画を読み込んでスクリプトを表示<br>
+        1. YouTubeで動画を検索・読み込む<br>
         2. まず字幕を見ながら1〜2回聞く<br>
         3. ×0.75速度でシャドーイング開始<br>
         4. 慣れたら×1.0に上げる<br>
@@ -660,339 +249,228 @@ body::before {
     </div>
   </div>
 
-</div><!-- /app -->
+</div>
 
-<!-- BOTTOM BAR -->
 <div class="bottom-bar">
   <div class="bottom-inner">
-    <button class="btn red" id="recBtn" onclick="toggleRecording()">
-      ● 録音開始
-    </button>
-    <button class="btn secondary" id="playbackBtn" onclick="playLastRecording()" disabled>
-      ▶ 再生
-    </button>
+    <button class="btn red" id="recBtn" onclick="toggleRecording()">● 録音開始</button>
+    <button class="btn secondary" id="playbackBtn" onclick="playLastRecording()" disabled>▶ 再生</button>
   </div>
 </div>
 
 <script>
-// ─────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────
-let player = null;
-let isRecording = false;
-let mediaRecorder = null;
-let chunks = [];
-let recordings = [];
-let recTimerInterval = null;
-let recStartTime = 0;
-let abA = null, abB = null;
-let abInterval = null;
-let currentSpeed = 1.0;
+let isRecording=false,mediaRecorder=null,chunks=[],recordings=[],recTimerInterval=null,recStartTime=0,currentVideoUrl='';
 
-// Load saved key
-window.addEventListener('load', () => {
-  const saved = localStorage.getItem('shadowlayer_groq_key');
-  if (saved) {
-    document.getElementById('groqKey').value = saved;
-    document.getElementById('keyStatus').textContent = '✓ 保存済み';
-  }
-  loadRecordingsFromStorage();
+window.addEventListener('load',()=>{
+  const gk=localStorage.getItem('sl_groq_key');
+  if(gk){document.getElementById('groqKey').value=gk;document.getElementById('groqKeyStatus').textContent='✓ 保存済み';}
+  const yk=localStorage.getItem('sl_yt_key');
+  if(yk){document.getElementById('ytKey').value=yk;document.getElementById('ytKeyStatus').textContent='✓ 保存済み';}
+  renderRecordings();
 });
 
-// ─────────────────────────────────────────
-// YOUTUBE
-// ─────────────────────────────────────────
-function extractVideoId(url) {
-  const patterns = [
-    /[?&]v=([^&]+)/,
-    /youtu\.be\/([^?&]+)/,
-    /embed\/([^?&]+)/,
-  ];
-  for (const p of patterns) {
-    const m = url.match(p);
-    if (m) return m[1];
-  }
+async function searchYouTube(){
+  const q=document.getElementById('searchInput').value.trim();
+  if(!q)return;
+  const apiKey=localStorage.getItem('sl_yt_key');
+  if(!apiKey){alert('設定タブでYouTube APIキーを入力してください');switchTabByName('settings');return;}
+  const btn=document.getElementById('searchBtn');
+  btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;
+  try{
+    const res=await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=8&q=${encodeURIComponent(q)}&key=${apiKey}`);
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message);
+    renderSearchResults(data.items||[]);
+  }catch(e){
+    document.getElementById('searchResults').innerHTML=`<div style="color:var(--accent3);font-size:12px;padding:10px;">エラー: ${e.message}</div>`;
+  }finally{btn.innerHTML='検索';btn.disabled=false;}
+}
+
+function renderSearchResults(items){
+  const el=document.getElementById('searchResults');
+  if(!items.length){el.innerHTML='<div class="empty-state">結果がありません</div>';return;}
+  el.innerHTML=items.map(item=>{
+    const vid=item.id.videoId;
+    const title=esc(item.snippet.title);
+    const channel=esc(item.snippet.channelTitle);
+    const thumb=item.snippet.thumbnails?.default?.url||'';
+    return`<div class="search-result-item" onclick="loadVideo('${vid}')">
+      <img class="search-thumb" src="${thumb}" alt="" loading="lazy" onerror="this.style.display='none'">
+      <div class="search-info">
+        <div class="search-title">${title}</div>
+        <div class="search-channel">${channel}</div>
+      </div>
+      <div class="search-play-icon">▶</div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function loadVideoFromInput(){
+  const url=document.getElementById('urlInput').value.trim();
+  if(!url)return;
+  const vid=extractVideoId(url);
+  if(!vid){alert('有効なYouTube URLを入力してください');return;}
+  loadVideo(vid);
+}
+
+function loadVideo(videoId){
+  const ytUrl=`https://www.youtube.com/watch?v=${videoId}`;
+  currentVideoUrl=ytUrl;
+  const iframe=document.getElementById('ytPlayer');
+  iframe.src=`https://www.youtube.com/embed/${videoId}?rel=0&cc_load_policy=1&cc_lang_pref=en`;
+  document.getElementById('playerWrap').style.display='block';
+  document.getElementById('controlsCard').style.display='block';
+  const d=document.getElementById('urlDisplay');
+  d.classList.add('visible');
+  document.getElementById('urlDisplayText').textContent=ytUrl;
+  document.getElementById('urlInput').value=ytUrl;
+  document.getElementById('urlOpenBtn').href=ytUrl;
+  document.getElementById('playerWrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function extractVideoId(url){
+  const patterns=[/[?&]v=([^&]+)/,/youtu\.be\/([^?&]+)/,/embed\/([^?&]+)/];
+  for(const p of patterns){const m=url.match(p);if(m)return m[1];}
   return null;
 }
 
-function loadVideo() {
-  const url = document.getElementById('urlInput').value.trim();
-  if (!url) return;
-  const vid = extractVideoId(url);
-  if (!vid) { alert('有効なYouTube URLを入力してください'); return; }
-
-  const wrap = document.getElementById('playerWrap');
-  const iframe = document.getElementById('ytPlayer');
-  iframe.src = `https://www.youtube.com/embed/${vid}?enablejsapi=1&rel=0&cc_load_policy=1&cc_lang_pref=en`;
-  wrap.style.display = 'block';
-  document.getElementById('controlsCard').style.display = 'block';
-}
-
-function setSpeed(s) {
-  currentSpeed = s;
-  document.querySelectorAll('.speed-btn').forEach(b => {
-    b.classList.toggle('active', parseFloat(b.textContent.replace('×','')) === s);
+function copyUrl(){
+  if(!currentVideoUrl)return;
+  navigator.clipboard.writeText(currentVideoUrl).then(()=>{
+    const btn=document.getElementById('copyBtn');
+    btn.textContent='✓ コピー済み';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='コピー';btn.classList.remove('copied');},2000);
   });
-  // Communicate speed to iframe via postMessage (YouTube iframe API)
-  const iframe = document.getElementById('ytPlayer');
-  if (iframe.contentWindow) {
-    iframe.contentWindow.postMessage(JSON.stringify({
-      event: 'command', func: 'setPlaybackRate', args: [s]
-    }), '*');
-  }
 }
 
-// ─────────────────────────────────────────
-// AB REPEAT
-// ─────────────────────────────────────────
-function setAB(point) {
-  const iframe = document.getElementById('ytPlayer');
-  // We can't get current time from iframe easily without API,
-  // so we store timestamp when button pressed and show info
-  if (point === 'a') {
-    abA = Date.now();
-    abB = null;
-    updateABBadge();
-    alert('A点をセットしました。次にB点をセットしてください。');
-  } else {
-    if (abA === null) { alert('先にA点をセットしてください'); return; }
-    abB = Date.now();
-    updateABBadge();
-    alert(`AB区間をセットしました。\nA→B間の動画部分を繰り返す場合は手動で操作してください。\n\n(YouTubeのiframe APIの制限によりA/B自動リピートは現在非対応)`);
-  }
+function setSpeed(s){
+  document.querySelectorAll('.speed-btn').forEach(b=>b.classList.toggle('active',b.textContent===`×${s}`));
+  try{
+    document.getElementById('ytPlayer').contentWindow.postMessage(JSON.stringify({event:'command',func:'setPlaybackRate',args:[s]}),'*');
+  }catch(e){}
 }
 
-function clearAB() {
-  abA = null; abB = null;
-  document.getElementById('abBadge').style.display = 'none';
+function showScript(){
+  const text=document.getElementById('scriptInput').value.trim();
+  if(!text)return;
+  const d=document.getElementById('scriptDisplay');
+  d.textContent=text;d.classList.add('visible');
+}
+function clearScript(){
+  document.getElementById('scriptInput').value='';
+  const d=document.getElementById('scriptDisplay');
+  d.textContent='';d.classList.remove('visible');
 }
 
-function updateABBadge() {
-  const badge = document.getElementById('abBadge');
-  if (abA !== null) {
-    badge.style.display = 'inline';
-    badge.textContent = abB !== null ? 'AB セット済み' : 'A セット済み';
-  }
-}
-
-// ─────────────────────────────────────────
-// SCRIPT
-// ─────────────────────────────────────────
-function showScript() {
-  const text = document.getElementById('scriptInput').value.trim();
-  if (!text) return;
-  const display = document.getElementById('scriptDisplay');
-  display.textContent = text;
-  display.classList.add('visible');
-}
-
-function clearScript() {
-  document.getElementById('scriptInput').value = '';
-  document.getElementById('scriptDisplay').textContent = '';
-  document.getElementById('scriptDisplay').classList.remove('visible');
-}
-
-// ─────────────────────────────────────────
-// AI SCRIPT GENERATION
-// ─────────────────────────────────────────
-async function generateScript() {
-  const topic = document.getElementById('topicInput').value.trim();
-  if (!topic) { alert('トピックを入力してください'); return; }
-  const apiKey = localStorage.getItem('shadowlayer_groq_key');
-  if (!apiKey) { alert('設定タブでGroq APIキーを入力してください'); return; }
-
-  const level = document.getElementById('levelSelect').value;
-  const length = document.getElementById('lengthSelect').value;
-  const wordCount = { short: 50, medium: 100, long: 150 }[length];
-  const levelDesc = { beginner:'A1-A2 (simple vocabulary, short sentences)', intermediate:'B1-B2 (natural conversational English)', advanced:'C1-C2 (rich vocabulary, complex sentences)' }[level];
-
-  const btn = document.getElementById('genBtn');
-  btn.innerHTML = '<span class="spinner"></span>生成中';
-  btn.disabled = true;
-
-  try {
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 600,
-        messages: [
-          {
-            role: 'system',
-            content: `You are an English language teacher creating shadowing practice scripts. 
-Generate natural spoken English scripts for shadowing practice.
-Level: ${levelDesc}
-Word count: approximately ${wordCount} words
-Style: natural, conversational, suitable for listening practice
-Output ONLY the script text. No title, no instructions, no explanation.`
-          },
-          {
-            role: 'user',
-            content: `Create a shadowing practice script about: ${topic}`
-          }
-        ]
-      })
+async function generateScript(){
+  const topic=document.getElementById('topicInput').value.trim();
+  if(!topic){alert('トピックを入力してください');return;}
+  const apiKey=localStorage.getItem('sl_groq_key');
+  if(!apiKey){alert('設定タブでGroq APIキーを入力してください');return;}
+  const level=document.getElementById('levelSelect').value;
+  const length=document.getElementById('lengthSelect').value;
+  const wordCount={short:50,medium:100,long:150}[length];
+  const levelDesc={beginner:'A1-A2 (simple vocabulary, short sentences)',intermediate:'B1-B2 (natural conversational English)',advanced:'C1-C2 (rich vocabulary, complex sentences)'}[level];
+  const btn=document.getElementById('genBtn');
+  btn.innerHTML='<span class="spinner"></span>生成中';btn.disabled=true;
+  try{
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:600,messages:[
+        {role:'system',content:`You are an English language teacher creating shadowing practice scripts.\nLevel: ${levelDesc}\nWord count: approximately ${wordCount} words\nStyle: natural, conversational\nOutput ONLY the script text.`},
+        {role:'user',content:`Create a shadowing practice script about: ${topic}`}
+      ]})
     });
-
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-    const script = data.choices[0].message.content.trim();
-    document.getElementById('scriptInput').value = script;
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message);
+    const script=data.choices[0].message.content.trim();
+    document.getElementById('scriptInput').value=script;
     showScript();
-  } catch (e) {
-    alert('エラー: ' + e.message);
-  } finally {
-    btn.innerHTML = '生成';
-    btn.disabled = false;
-  }
+  }catch(e){alert('エラー: '+e.message);}
+  finally{btn.innerHTML='生成';btn.disabled=false;}
 }
 
-// ─────────────────────────────────────────
-// RECORDING
-// ─────────────────────────────────────────
-async function toggleRecording() {
-  if (!isRecording) {
-    await startRecording();
-  } else {
-    stopRecording();
-  }
-}
+async function toggleRecording(){if(!isRecording)await startRecording();else stopRecording();}
 
-async function startRecording() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
-    chunks = [];
-    mediaRecorder.ondataavailable = e => chunks.push(e.data);
-    mediaRecorder.onstop = saveRecording;
-    mediaRecorder.start();
-    isRecording = true;
-
-    // UI
+async function startRecording(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    mediaRecorder=new MediaRecorder(stream);chunks=[];
+    mediaRecorder.ondataavailable=e=>chunks.push(e.data);
+    mediaRecorder.onstop=saveRecording;
+    mediaRecorder.start();isRecording=true;
     document.getElementById('recDot').classList.add('recording');
-    document.getElementById('recLabel').textContent = '録音中...';
-    document.getElementById('recTimer').style.display = 'block';
-    document.getElementById('recBtn').textContent = '■ 録音停止';
-    document.getElementById('recBtn').style.background = '#555';
-
-    recStartTime = Date.now();
-    recTimerInterval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - recStartTime) / 1000);
-      const m = Math.floor(elapsed / 60);
-      const s = elapsed % 60;
-      document.getElementById('recTimer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
-    }, 500);
-
-    // switch to rec tab
-    document.querySelectorAll('.tab').forEach((t,i) => {
-      t.classList.toggle('active', i === 1);
-    });
-    document.querySelectorAll('.tab-pane').forEach((p,i) => {
-      p.classList.toggle('active', i === 1);
-    });
-
-  } catch(e) {
-    alert('マイクへのアクセスが必要です: ' + e.message);
-  }
+    document.getElementById('recLabel').textContent='録音中...';
+    document.getElementById('recTimer').style.display='block';
+    document.getElementById('recBtn').textContent='■ 録音停止';
+    document.getElementById('recBtn').style.background='#555';
+    recStartTime=Date.now();
+    recTimerInterval=setInterval(()=>{
+      const e=Math.floor((Date.now()-recStartTime)/1000);
+      document.getElementById('recTimer').textContent=`${Math.floor(e/60)}:${(e%60).toString().padStart(2,'0')}`;
+    },500);
+    switchTabByName('rec');
+  }catch(e){alert('マイクへのアクセスが必要です: '+e.message);}
 }
 
-function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    mediaRecorder.stop();
-    mediaRecorder.stream.getTracks().forEach(t => t.stop());
-  }
-  isRecording = false;
-  clearInterval(recTimerInterval);
-
-  // UI
+function stopRecording(){
+  if(mediaRecorder&&mediaRecorder.state!=='inactive'){mediaRecorder.stop();mediaRecorder.stream.getTracks().forEach(t=>t.stop());}
+  isRecording=false;clearInterval(recTimerInterval);
   document.getElementById('recDot').classList.remove('recording');
-  document.getElementById('recLabel').textContent = '録音完了';
-  document.getElementById('recTimer').style.display = 'none';
-  document.getElementById('recBtn').textContent = '● 録音開始';
-  document.getElementById('recBtn').style.background = '';
+  document.getElementById('recLabel').textContent='録音完了';
+  document.getElementById('recTimer').style.display='none';
+  document.getElementById('recBtn').textContent='● 録音開始';
+  document.getElementById('recBtn').style.background='';
 }
 
-function saveRecording() {
-  const blob = new Blob(chunks, { type: 'audio/webm' });
-  const url = URL.createObjectURL(blob);
-  const now = new Date();
-  const label = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
-
-  recordings.unshift({ url, label, blob });
-  if (recordings.length > 20) recordings.pop(); // keep last 20
-
+function saveRecording(){
+  const blob=new Blob(chunks,{type:'audio/webm'});
+  const url=URL.createObjectURL(blob);
+  const now=new Date();
+  const label=`${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+  recordings.unshift({url,label});
+  if(recordings.length>20)recordings.pop();
   renderRecordings();
-  document.getElementById('playbackBtn').disabled = false;
-  saveRecordingsToStorage();
+  document.getElementById('playbackBtn').disabled=false;
 }
 
-function renderRecordings() {
-  const list = document.getElementById('recordingsList');
-  if (recordings.length === 0) {
-    list.innerHTML = '<div class="empty-state">録音がありません<br>下のボタンで録音を開始</div>';
-    return;
-  }
-  list.innerHTML = recordings.map((r, i) => `
+function renderRecordings(){
+  const list=document.getElementById('recordingsList');
+  if(!recordings.length){list.innerHTML='<div class="empty-state">録音がありません<br>下のボタンで録音を開始</div>';return;}
+  list.innerHTML=recordings.map((r,i)=>`
     <div class="recording-item">
-      <span class="recording-name">#${recordings.length - i} ${r.label}</span>
+      <span class="recording-name">#${recordings.length-i} ${r.label}</span>
       <audio src="${r.url}" controls></audio>
       <button class="del-btn" onclick="deleteRecording(${i})">✕</button>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-function deleteRecording(i) {
-  recordings.splice(i, 1);
-  renderRecordings();
-  if (recordings.length === 0) document.getElementById('playbackBtn').disabled = true;
+function deleteRecording(i){
+  recordings.splice(i,1);renderRecordings();
+  if(!recordings.length)document.getElementById('playbackBtn').disabled=true;
 }
 
-function playLastRecording() {
-  if (recordings.length === 0) return;
-  const audio = new Audio(recordings[0].url);
-  audio.play();
-}
+function playLastRecording(){if(recordings.length)new Audio(recordings[0].url).play();}
 
-function saveRecordingsToStorage() {
-  // Only save metadata (not blob URLs which are session-only)
-  const meta = recordings.map(r => ({ label: r.label }));
-  try { localStorage.setItem('shadowlayer_rec_meta', JSON.stringify(meta)); } catch(e) {}
-}
-
-function loadRecordingsFromStorage() {
-  // Blob URLs don't persist, so just show empty on fresh load
-  renderRecordings();
-}
-
-// ─────────────────────────────────────────
-// TABS
-// ─────────────────────────────────────────
-function switchTab(name, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+function switchTabByName(name){
+  const tabs=document.querySelectorAll('.tab');
+  const names=['script','rec','settings'];
+  const i=names.indexOf(name);
+  if(i>=0)switchTab(name,tabs[i]);
 }
 
-// ─────────────────────────────────────────
-// API KEY
-// ─────────────────────────────────────────
-function saveKey() {
-  const key = document.getElementById('groqKey').value.trim();
-  if (!key) return;
-  localStorage.setItem('shadowlayer_groq_key', key);
-  document.getElementById('keyStatus').textContent = '✓ 保存しました';
-}
-
-function toggleKey(id, btn) {
-  const input = document.getElementById(id);
-  if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
-  else { input.type = 'password'; btn.textContent = '👁'; }
-}
+function saveYtKey(){const k=document.getElementById('ytKey').value.trim();if(!k)return;localStorage.setItem('sl_yt_key',k);document.getElementById('ytKeyStatus').textContent='✓ 保存しました';}
+function saveGroqKey(){const k=document.getElementById('groqKey').value.trim();if(!k)return;localStorage.setItem('sl_groq_key',k);document.getElementById('groqKeyStatus').textContent='✓ 保存しました';}
+function toggleKey(id,btn){const input=document.getElementById(id);input.type=input.type==='password'?'text':'password';btn.textContent=input.type==='password'?'👁':'🙈';}
 </script>
 </body>
 </html>
