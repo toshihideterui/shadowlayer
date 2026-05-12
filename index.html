@@ -157,6 +157,7 @@ select{background:var(--bg);border:1px solid var(--border);border-radius:6px;col
   <!-- TABS -->
   <div class="tabs">
     <div class="tab active" onclick="switchTab('script',this)">スクリプト</div>
+    <div class="tab" onclick="switchTab('audio',this)">音声</div>
     <div class="tab" onclick="switchTab('rec',this)">録音</div>
     <div class="tab" onclick="switchTab('settings',this)">設定</div>
   </div>
@@ -194,7 +195,54 @@ select{background:var(--bg);border:1px solid var(--border);border-radius:6px;col
     <div id="scriptDisplay"></div>
   </div>
 
-  <!-- RECORDING TAB -->
+  <!-- AUDIO TAB -->
+  <div class="tab-pane" id="tab-audio">
+    <div class="card">
+      <div class="section-label" style="margin-bottom:8px;">▸ 音声ファイルをアップロード</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;">
+        MP3・WAV・M4Aなど対応。著作権フリー音源を使用してください。<br>
+        おすすめ：<a href="https://learningenglish.voanews.com" target="_blank" style="color:var(--accent);">VOA Learning English</a> /
+        <a href="https://librivox.org" target="_blank" style="color:var(--accent);">LibriVox</a>
+      </div>
+      <label id="uploadLabel" style="display:block;background:var(--bg);border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:28px;margin-bottom:8px;">🎵</div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text2);">タップして音声ファイルを選択</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:4px;">MP3 / WAV / M4A / OGG</div>
+        <input type="file" id="audioFileInput" accept="audio/*" style="display:none;" onchange="loadAudioFile(this)">
+      </label>
+    </div>
+
+    <!-- AUDIO PLAYER -->
+    <div class="card" id="audioPlayerCard" style="display:none;">
+      <div class="section-label" style="margin-bottom:10px;">▸ 再生中</div>
+      <div id="audioFileName" style="font-family:var(--mono);font-size:11px;color:var(--accent2);margin-bottom:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+      <audio id="audioPlayer" controls style="width:100%;margin-bottom:12px;"></audio>
+
+      <!-- AUDIO SPEED -->
+      <div class="section-label" style="margin-bottom:8px;">▸ 再生速度</div>
+      <div class="speed-btns" style="margin-bottom:8px;">
+        <button class="speed-btn" onclick="setAudioSpeed(0.5)">×0.5</button>
+        <button class="speed-btn" onclick="setAudioSpeed(0.75)">×0.75</button>
+        <button class="speed-btn active" onclick="setAudioSpeed(1.0)">×1.0</button>
+        <button class="speed-btn" onclick="setAudioSpeed(1.25)">×1.25</button>
+        <button class="speed-btn" onclick="setAudioSpeed(1.5)">×1.5</button>
+      </div>
+
+      <!-- AB REPEAT -->
+      <div class="section-label" style="margin-bottom:8px;">▸ AB リピート</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <button class="btn secondary" style="font-size:11px;padding:6px 12px;" onclick="setAudioAB('a')">[A] セット</button>
+        <button class="btn secondary" style="font-size:11px;padding:6px 12px;" onclick="setAudioAB('b')">[B] セット</button>
+        <button class="btn secondary" style="font-size:11px;padding:6px 12px;" onclick="clearAudioAB()">クリア</button>
+        <span id="abBadgeAudio" style="display:none;font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.3);color:var(--accent2);"></span>
+      </div>
+      <div id="abInfoAudio" style="margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--text3);"></div>
+    </div>
+
+    <!-- UPLOADED LIST -->
+    <div class="section-label">▸ アップロード済み</div>
+    <div id="audioList"><div class="empty-state">音声ファイルがありません</div></div>
+  </div>
   <div class="tab-pane" id="tab-rec">
     <div class="card">
       <div class="section-label" style="margin-bottom:10px;">▸ シャドーイング録音</div>
@@ -463,7 +511,7 @@ function switchTab(name,el){
 }
 function switchTabByName(name){
   const tabs=document.querySelectorAll('.tab');
-  const names=['script','rec','settings'];
+  const names=['script','audio','rec','settings'];
   const i=names.indexOf(name);
   if(i>=0)switchTab(name,tabs[i]);
 }
@@ -471,6 +519,121 @@ function switchTabByName(name){
 function saveYtKey(){const k=document.getElementById('ytKey').value.trim();if(!k)return;localStorage.setItem('sl_yt_key',k);document.getElementById('ytKeyStatus').textContent='✓ 保存しました';}
 function saveGroqKey(){const k=document.getElementById('groqKey').value.trim();if(!k)return;localStorage.setItem('sl_groq_key',k);document.getElementById('groqKeyStatus').textContent='✓ 保存しました';}
 function toggleKey(id,btn){const input=document.getElementById(id);input.type=input.type==='password'?'text':'password';btn.textContent=input.type==='password'?'👁':'🙈';}
+
+// ─── AUDIO FILE ──────────────────────────
+let audioFiles=[]; // {name, url, blob}
+let audioAbA=null, audioAbB=null, audioAbInterval=null;
+
+function loadAudioFile(input){
+  const files=Array.from(input.files);
+  if(!files.length)return;
+  files.forEach(file=>{
+    const url=URL.createObjectURL(file);
+    audioFiles.unshift({name:file.name, url, size:file.size});
+  });
+  renderAudioList();
+  // Auto-load first file
+  playAudioFile(0);
+  // Reset input so same file can be re-selected
+  input.value='';
+}
+
+function playAudioFile(i){
+  const f=audioFiles[i];
+  if(!f)return;
+  const player=document.getElementById('audioPlayer');
+  const card=document.getElementById('audioPlayerCard');
+  player.src=f.url;
+  document.getElementById('audioFileName').textContent=f.name;
+  card.style.display='block';
+  player.play().catch(()=>{});
+  // reset AB
+  clearAudioAB();
+  // highlight active
+  document.querySelectorAll('.audio-item').forEach((el,idx)=>{
+    el.style.borderColor=idx===i?'var(--accent)':'var(--border)';
+  });
+}
+
+function removeAudioFile(i){
+  URL.revokeObjectURL(audioFiles[i].url);
+  audioFiles.splice(i,1);
+  renderAudioList();
+  if(!audioFiles.length){
+    document.getElementById('audioPlayerCard').style.display='none';
+    document.getElementById('audioPlayer').src='';
+  }
+}
+
+function renderAudioList(){
+  const list=document.getElementById('audioList');
+  if(!audioFiles.length){
+    list.innerHTML='<div class="empty-state">音声ファイルがありません</div>';
+    return;
+  }
+  list.innerHTML=audioFiles.map((f,i)=>`
+    <div class="audio-item recording-item" onclick="playAudioFile(${i})" style="cursor:pointer;">
+      <div style="font-size:20px;">🎵</div>
+      <div style="flex:1;overflow:hidden;">
+        <div style="font-size:12px;color:var(--text1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(f.name)}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">${(f.size/1024/1024).toFixed(1)} MB</div>
+      </div>
+      <button class="del-btn" onclick="event.stopPropagation();removeAudioFile(${i})">✕</button>
+    </div>`).join('');
+}
+
+function setAudioSpeed(s){
+  const player=document.getElementById('audioPlayer');
+  player.playbackRate=s;
+  document.querySelectorAll('#audioPlayerCard .speed-btn').forEach(b=>{
+    b.classList.toggle('active',b.textContent===`×${s}`);
+  });
+}
+
+function setAudioAB(point){
+  const player=document.getElementById('audioPlayer');
+  if(!player.src||player.src===''){alert('先に音声ファイルを選択してください');return;}
+  if(point==='a'){
+    audioAbA=player.currentTime;
+    audioAbB=null;
+    clearInterval(audioAbInterval);
+    updateAudioABBadge();
+  } else {
+    if(audioAbA===null){alert('先にA点をセットしてください');return;}
+    audioAbB=player.currentTime;
+    if(audioAbB<=audioAbA){alert('B点はA点より後ろにセットしてください');return;}
+    updateAudioABBadge();
+    clearInterval(audioAbInterval);
+    // Start AB loop
+    audioAbInterval=setInterval(()=>{
+      if(player.currentTime>=audioAbB){
+        player.currentTime=audioAbA;
+        player.play().catch(()=>{});
+      }
+    },200);
+  }
+}
+
+function clearAudioAB(){
+  audioAbA=null;audioAbB=null;
+  clearInterval(audioAbInterval);
+  document.getElementById('abBadgeAudio').style.display='none';
+  document.getElementById('abInfoAudio').textContent='';
+}
+
+function updateAudioABBadge(){
+  const badge=document.getElementById('abBadgeAudio');
+  const info=document.getElementById('abInfoAudio');
+  if(audioAbA!==null&&audioAbB!==null){
+    badge.style.display='inline';
+    badge.textContent='AB リピート中';
+    info.textContent=`A: ${audioAbA.toFixed(1)}s → B: ${audioAbB.toFixed(1)}s`;
+  } else if(audioAbA!==null){
+    badge.style.display='inline';
+    badge.textContent='A セット済み';
+    info.textContent=`A: ${audioAbA.toFixed(1)}s（次にBをセット）`;
+  }
+}
 </script>
 </body>
 </html>
